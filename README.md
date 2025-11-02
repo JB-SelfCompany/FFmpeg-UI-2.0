@@ -178,7 +178,15 @@ pyinstaller build.spec
 
 ## 📸 Скриншоты
 
-> **Скоро** - Скриншоты основного интерфейса, редактора фильтров и пакетной обработки будут добавлены здесь.
+<p align="center">
+  <img src="raw/main.png" style="width: 60%; height: auto;">
+</p>
+<p align="center">
+  <img src="raw/info.png" style="width: 60%; height: auto;">
+</p>
+<p align="center">
+  <img src="raw/preview.png" style="width: 60%; height: auto;">
+</p>
 
 ---
 

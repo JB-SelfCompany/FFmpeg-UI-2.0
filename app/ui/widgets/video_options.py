@@ -44,8 +44,16 @@ class VideoOptions(QWidget):
             "Авто (рекомендуется)",
             "H.264 / AVC (libx264)",
             "H.265 / HEVC (libx265)",
+            "H.266 / VVC (libvvenc)",
             "VP9 (libvpx-vp9)",
             "AV1 (libaom-av1)",
+            "AV1 (SVT-AV1)",
+            "MJPEG (Motion JPEG)",
+            "Apple ProRes",
+            "DNxHD / DNxHR",
+            "JPEG 2000",
+            "Theora",
+            "MPEG-2",
             "Copy (без перекодирования)"
         ])
         self.codec_combo.setCurrentText("Авто (рекомендуется)")
@@ -54,8 +62,16 @@ class VideoOptions(QWidget):
             "• Авто - автоматический выбор лучшего кодека\n"
             "• H.264 - универсальный, быстрый, максимальная совместимость\n"
             "• H.265 - лучшее сжатие на 30-50%, медленнее\n"
+            "• H.266/VVC - следующее поколение, на 30% лучше H.265\n"
             "• VP9 - для WebM, открытый, хорошее сжатие\n"
-            "• AV1 - новейший, best сжатие (30-50% лучше H.265), очень медленный\n"
+            "• AV1 (libaom) - лучшее сжатие, очень медленный\n"
+            "• AV1 (SVT-AV1) - быстрый AV1 энкодер от Intel/Netflix\n"
+            "• MJPEG - покадровое сжатие, быстрое, для редактирования\n"
+            "• ProRes - профессиональный кодек Apple, высокое качество\n"
+            "• DNxHD/DNxHR - Avid кодек, для монтажа\n"
+            "• JPEG 2000 - архивирование высокого качества\n"
+            "• Theora - открытый кодек для OGG\n"
+            "• MPEG-2 - DVD/Broadcast стандарт\n"
             "• Copy - копирование без перекодирования"
         )
         self.codec_combo.currentTextChanged.connect(self._on_codec_changed)
@@ -303,13 +319,15 @@ class VideoOptions(QWidget):
             "<tr><td><b>H.264</b></td><td>★★★★☆</td><td>★★★★★</td><td>★★★★★</td><td>★★★★★</td></tr>"
             "<tr><td><b>H.265</b></td><td>★★★★★</td><td>★★★☆☆</td><td>★★★☆☆</td><td>★★★★☆</td></tr>"
             "<tr><td><b>VP9</b></td><td>★★★★☆</td><td>★★★☆☆</td><td>★★★★☆</td><td>★★★☆☆</td></tr>"
-            "<tr><td><b>AV1</b></td><td>★★★★★</td><td>★★☆☆☆</td><td>★★★★☆</td><td>★★★☆☆</td></tr>"
+            "<tr><td><b>AV1 (libaom)</b></td><td>★★★★★</td><td>★★☆☆☆</td><td>★★★★☆</td><td>★★★☆☆</td></tr>"
+            "<tr><td><b>AV1 (SVT-AV1)</b></td><td>★★★★★</td><td>★★★★☆</td><td>★★★★☆</td><td>★★★★☆</td></tr>"
             "</table>"
             "<br>"
             "<b>Рекомендации по выбору:</b><br>"
             "• <b>Универсальность</b>: H.264 - работает везде<br>"
             "• <b>Качество/Размер</b>: H.265 или AV1 - лучшее сжатие<br>"
-            "• <b>Скорость</b>: H.264 - самый быстрый<br>"
+            "• <b>Скорость</b>: H.264 или SVT-AV1 - быстрые энкодеры<br>"
+            "• <b>Баланс</b>: SVT-AV1 - отличное сжатие + высокая скорость<br>"
             "• <b>WebM контейнер</b>: VP9 или AV1<br>"
             "• <b>Архивирование</b>: H.265 или AV1<br>"
             "<br>"
@@ -327,15 +345,23 @@ class VideoOptions(QWidget):
     def get_video_codec(self) -> str:
         """Получить видео кодек"""
         codec_text = self.codec_combo.currentText()
-        
+
         if codec_text == "Авто (рекомендуется)":
             return "auto"
-        
+
         codec_map = {
             "H.264 / AVC (libx264)": "libx264",
             "H.265 / HEVC (libx265)": "libx265",
+            "H.266 / VVC (libvvenc)": "libvvenc",
             "VP9 (libvpx-vp9)": "libvpx-vp9",
             "AV1 (libaom-av1)": "libaom-av1",
+            "AV1 (SVT-AV1)": "libsvtav1",
+            "MJPEG (Motion JPEG)": "mjpeg",
+            "Apple ProRes": "prores_ks",
+            "DNxHD / DNxHR": "dnxhd",
+            "JPEG 2000": "jpeg2000",
+            "Theora": "libtheora",
+            "MPEG-2": "mpeg2video",
             "Copy (без перекодирования)": "copy"
         }
         return codec_map.get(codec_text, "libx264")

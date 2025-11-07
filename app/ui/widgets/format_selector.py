@@ -54,12 +54,28 @@ class FormatSelector(QWidget):
     
     def _populate_formats(self):
         """Заполнение списка форматов"""
-        formats = self.format_db.get_all_formats()
-        for fmt in formats:
-            self.format_combo.addItem(
-                f"{fmt['extension'].upper()} - {fmt['name']}",
-                fmt
-            )
+        # Добавляем видео форматы
+        video_formats = self.format_db.get_video_formats()
+        if video_formats:
+            self.format_combo.addItem("─── 📹 ВИДЕО ФОРМАТЫ ───", None)
+            for fmt in video_formats:
+                self.format_combo.addItem(
+                    f"  {fmt['extension'].upper()} - {fmt['name']}",
+                    fmt
+                )
+
+        # Добавляем разделитель
+        self.format_combo.addItem("", None)
+
+        # Добавляем аудио форматы
+        audio_formats = self.format_db.get_audio_formats()
+        if audio_formats:
+            self.format_combo.addItem("─── 🎵 АУДИО ФОРМАТЫ ───", None)
+            for fmt in audio_formats:
+                self.format_combo.addItem(
+                    f"  {fmt['extension'].upper()} - {fmt['name']}",
+                    fmt
+                )
     
     def _on_format_changed(self, text: str):
         """Обработка смены формата"""
@@ -67,6 +83,11 @@ class FormatSelector(QWidget):
         if format_data:
             self.description_label.setText(format_data['description'])
             self.format_changed.emit(format_data)
+        else:
+            # Это разделитель или заголовок - переключаемся на следующий элемент
+            current_index = self.format_combo.currentIndex()
+            if current_index < self.format_combo.count() - 1:
+                self.format_combo.setCurrentIndex(current_index + 1)
     
     def get_selected_format(self) -> dict:
         """Получить выбранный формат"""

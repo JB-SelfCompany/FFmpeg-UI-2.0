@@ -247,9 +247,26 @@ class FilterWidget(QWidget):
         category_layout = QHBoxLayout()
         category_layout.addWidget(QLabel("Категория:"))
         self.category_combo = QComboBox()
-        self.category_combo.addItem("Все фильтры", None)
+        self.category_combo.addItem("📚 Все фильтры", None)
+
+        # Разделитель
+        self.category_combo.addItem("", None)
+
+        # Добавляем видео категории
+        self.category_combo.addItem("─── 🎬 ВИДЕО ФИЛЬТРЫ ───", "separator_video")
         for category in FilterCategory:
-            self.category_combo.addItem(self._get_category_label(category), category)
+            if category.value.startswith('video_'):
+                self.category_combo.addItem(self._get_category_label(category), category)
+        
+        # Разделитель
+        self.category_combo.addItem("", None)
+
+        # Добавляем аудио категории
+        self.category_combo.addItem("─── 🔊 АУДИО ФИЛЬТРЫ ───", "separator_audio")
+        for category in FilterCategory:
+            if category.value.startswith('audio_'):
+                self.category_combo.addItem(self._get_category_label(category), category)
+
         self.category_combo.currentIndexChanged.connect(self._refresh_filter_list)
         category_layout.addWidget(self.category_combo, stretch=1)
         layout.addLayout(category_layout)
@@ -384,14 +401,26 @@ class FilterWidget(QWidget):
     def _get_category_label(self, category: FilterCategory) -> str:
         """Получить читаемое название категории"""
         labels = {
+            # Видео категории
             FilterCategory.VIDEO_TRANSFORM: "🔄 Трансформации видео",
             FilterCategory.VIDEO_ADJUST: "🎨 Настройки цвета",
             FilterCategory.VIDEO_EFFECTS: "✨ Видео эффекты",
+            FilterCategory.VIDEO_STABILIZE: "📹 Стабилизация видео",
+            FilterCategory.VIDEO_CREATIVE: "🎬 Креативные эффекты",
             FilterCategory.VIDEO_OVERLAY: "📝 Наложения",
             FilterCategory.VIDEO_TIME: "⏱️ Временные эффекты",
+            FilterCategory.VIDEO_COLOR: "🌈 Цветокоррекция",
+            FilterCategory.VIDEO_BLUR: "🌫️ Размытие",
+            FilterCategory.VIDEO_DEINTERLACE: "🎞️ Деинтерлейсинг",
+            FilterCategory.VIDEO_ANALYSIS: "📊 Анализ видео",
+            # Аудио категории
             FilterCategory.AUDIO_VOLUME: "🔊 Громкость",
             FilterCategory.AUDIO_EFFECTS: "🎵 Аудио эффекты",
             FilterCategory.AUDIO_FILTER: "📊 Частотные фильтры",
+            FilterCategory.AUDIO_DYNAMICS: "🔧 Динамическая обработка",
+            FilterCategory.AUDIO_EQ: "🎚️ Эквализация",
+            FilterCategory.AUDIO_SPATIAL: "🎧 Пространственная обработка",
+            FilterCategory.AUDIO_DENOISE: "🔇 Шумоподавление",
         }
         return labels.get(category, category.value)
 
@@ -400,6 +429,13 @@ class FilterWidget(QWidget):
         self.filter_list.clear()
 
         category = self.category_combo.currentData()
+
+        # Игнорируем разделители
+        if isinstance(category, str) and category.startswith("separator_"):
+            # Если выбран разделитель, переключаемся на "Все фильтры"
+            self.category_combo.setCurrentIndex(0)
+            return
+
         if category:
             filters = self.database.get_filters_by_category(category)
         else:

@@ -118,16 +118,27 @@ class ModernTheme:
         }
         
         QComboBox::drop-down {
+            subcontrol-origin: padding;
+            subcontrol-position: top right;
+            width: 20px;
             border: none;
-            width: 30px;
+            background-color: transparent;
         }
-        
+
         QComboBox::down-arrow {
-            image: url(none);
+            width: 0;
+            height: 0;
             border-left: 5px solid transparent;
             border-right: 5px solid transparent;
-            border-top: 5px solid #757575;
-            margin-right: 10px;
+            border-top: 6px solid #616161;
+        }
+
+        QComboBox:hover::down-arrow {
+            border-top-color: #212121;
+        }
+
+        QComboBox:disabled::down-arrow {
+            border-top-color: #BDBDBD;
         }
         
         QComboBox QAbstractItemView {
@@ -165,17 +176,126 @@ class ModernTheme:
         }
         
         /* SpinBox */
-        QSpinBox {
+        QSpinBox, QDoubleSpinBox {
             border: 2px solid #E0E0E0;
             border-radius: 5px;
             padding: 6px;
             background-color: white;
         }
-        
-        QSpinBox:focus {
+
+        QSpinBox:focus, QDoubleSpinBox:focus {
             border-color: #2196F3;
         }
-        
+
+        QSpinBox::up-button, QSpinBox::down-button,
+        QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
+            subcontrol-origin: border;
+            background-color: transparent;
+            border: none;
+            width: 16px;
+        }
+
+        QSpinBox::up-button, QDoubleSpinBox::up-button {
+            subcontrol-position: top right;
+        }
+
+        QSpinBox::down-button, QDoubleSpinBox::down-button {
+            subcontrol-position: bottom right;
+        }
+
+        QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 5px solid #616161;
+        }
+
+        QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 5px solid #616161;
+        }
+
+        QSpinBox:hover::up-arrow, QDoubleSpinBox:hover::up-arrow {
+            border-bottom-color: #212121;
+        }
+
+        QSpinBox:hover::down-arrow, QDoubleSpinBox:hover::down-arrow {
+            border-top-color: #212121;
+        }
+
+        QSpinBox::up-arrow:disabled, QDoubleSpinBox::up-arrow:disabled {
+            border-bottom-color: #BDBDBD;
+        }
+
+        QSpinBox::down-arrow:disabled, QDoubleSpinBox::down-arrow:disabled {
+            border-top-color: #BDBDBD;
+        }
+
+        /* TimeEdit и DateTimeEdit */
+        QTimeEdit, QDateTimeEdit, QDateEdit {
+            border: 2px solid #E0E0E0;
+            border-radius: 5px;
+            padding: 6px;
+            background-color: white;
+        }
+
+        QTimeEdit:focus, QDateTimeEdit:focus, QDateEdit:focus {
+            border-color: #2196F3;
+        }
+
+        QTimeEdit::up-button, QTimeEdit::down-button,
+        QDateTimeEdit::up-button, QDateTimeEdit::down-button,
+        QDateEdit::up-button, QDateEdit::down-button {
+            subcontrol-origin: border;
+            background-color: transparent;
+            border: none;
+            width: 16px;
+        }
+
+        QTimeEdit::up-button, QDateTimeEdit::up-button, QDateEdit::up-button {
+            subcontrol-position: top right;
+        }
+
+        QTimeEdit::down-button, QDateTimeEdit::down-button, QDateEdit::down-button {
+            subcontrol-position: bottom right;
+        }
+
+        QTimeEdit::up-arrow, QDateTimeEdit::up-arrow, QDateEdit::up-arrow {
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 5px solid #616161;
+        }
+
+        QTimeEdit::down-arrow, QDateTimeEdit::down-arrow, QDateEdit::down-arrow {
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 5px solid #616161;
+        }
+
+        QTimeEdit:hover::up-arrow, QDateTimeEdit:hover::up-arrow, QDateEdit:hover::up-arrow {
+            border-bottom-color: #212121;
+        }
+
+        QTimeEdit:hover::down-arrow, QDateTimeEdit:hover::down-arrow, QDateEdit:hover::down-arrow {
+            border-top-color: #212121;
+        }
+
+        QTimeEdit::up-arrow:disabled, QDateTimeEdit::up-arrow:disabled, QDateEdit::up-arrow:disabled {
+            border-bottom-color: #BDBDBD;
+        }
+
+        QTimeEdit::down-arrow:disabled, QDateTimeEdit::down-arrow:disabled, QDateEdit::down-arrow:disabled {
+            border-top-color: #BDBDBD;
+        }
+
         /* CheckBox */
         QCheckBox {
             spacing: 8px;
@@ -427,16 +547,27 @@ class ModernTheme:
         }
 
         QComboBox::drop-down {
+            subcontrol-origin: padding;
+            subcontrol-position: top right;
+            width: 20px;
             border: none;
-            width: 30px;
+            background-color: transparent;
         }
 
         QComboBox::down-arrow {
-            image: url(none);
+            width: 0;
+            height: 0;
             border-left: 5px solid transparent;
             border-right: 5px solid transparent;
-            border-top: 5px solid #CCCCCC;
-            margin-right: 10px;
+            border-top: 6px solid #AAAAAA;
+        }
+
+        QComboBox:hover::down-arrow {
+            border-top-color: #FFFFFF;
+        }
+
+        QComboBox:disabled::down-arrow {
+            border-top-color: #656565;
         }
 
         QComboBox QAbstractItemView {
@@ -475,7 +606,7 @@ class ModernTheme:
         }
 
         /* SpinBox */
-        QSpinBox {
+        QSpinBox, QDoubleSpinBox {
             border: 1px solid #3E3E42;
             border-radius: 5px;
             padding: 6px;
@@ -483,17 +614,118 @@ class ModernTheme:
             color: #E0E0E0;
         }
 
-        QSpinBox:focus {
+        QSpinBox:focus, QDoubleSpinBox:focus {
             border-color: #0E639C;
         }
 
-        QSpinBox::up-button, QSpinBox::down-button {
-            background-color: #3E3E42;
+        QSpinBox::up-button, QSpinBox::down-button,
+        QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
+            subcontrol-origin: border;
+            background-color: transparent;
             border: none;
+            width: 16px;
         }
 
-        QSpinBox::up-button:hover, QSpinBox::down-button:hover {
-            background-color: #505050;
+        QSpinBox::up-button, QDoubleSpinBox::up-button {
+            subcontrol-position: top right;
+        }
+
+        QSpinBox::down-button, QDoubleSpinBox::down-button {
+            subcontrol-position: bottom right;
+        }
+
+        QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 5px solid #AAAAAA;
+        }
+
+        QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 5px solid #AAAAAA;
+        }
+
+        QSpinBox:hover::up-arrow, QDoubleSpinBox:hover::up-arrow {
+            border-bottom-color: #FFFFFF;
+        }
+
+        QSpinBox:hover::down-arrow, QDoubleSpinBox:hover::down-arrow {
+            border-top-color: #FFFFFF;
+        }
+
+        QSpinBox::up-arrow:disabled, QDoubleSpinBox::up-arrow:disabled {
+            border-bottom-color: #656565;
+        }
+
+        QSpinBox::down-arrow:disabled, QDoubleSpinBox::down-arrow:disabled {
+            border-top-color: #656565;
+        }
+
+        /* TimeEdit и DateTimeEdit */
+        QTimeEdit, QDateTimeEdit, QDateEdit {
+            border: 1px solid #3E3E42;
+            border-radius: 5px;
+            padding: 6px;
+            background-color: #2D2D30;
+            color: #E0E0E0;
+        }
+
+        QTimeEdit:focus, QDateTimeEdit:focus, QDateEdit:focus {
+            border-color: #0E639C;
+        }
+
+        QTimeEdit::up-button, QTimeEdit::down-button,
+        QDateTimeEdit::up-button, QDateTimeEdit::down-button,
+        QDateEdit::up-button, QDateEdit::down-button {
+            subcontrol-origin: border;
+            background-color: transparent;
+            border: none;
+            width: 16px;
+        }
+
+        QTimeEdit::up-button, QDateTimeEdit::up-button, QDateEdit::up-button {
+            subcontrol-position: top right;
+        }
+
+        QTimeEdit::down-button, QDateTimeEdit::down-button, QDateEdit::down-button {
+            subcontrol-position: bottom right;
+        }
+
+        QTimeEdit::up-arrow, QDateTimeEdit::up-arrow, QDateEdit::up-arrow {
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 5px solid #AAAAAA;
+        }
+
+        QTimeEdit::down-arrow, QDateTimeEdit::down-arrow, QDateEdit::down-arrow {
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 5px solid #AAAAAA;
+        }
+
+        QTimeEdit:hover::up-arrow, QDateTimeEdit:hover::up-arrow, QDateEdit:hover::up-arrow {
+            border-bottom-color: #FFFFFF;
+        }
+
+        QTimeEdit:hover::down-arrow, QDateTimeEdit:hover::down-arrow, QDateEdit:hover::down-arrow {
+            border-top-color: #FFFFFF;
+        }
+
+        QTimeEdit::up-arrow:disabled, QDateTimeEdit::up-arrow:disabled, QDateEdit::up-arrow:disabled {
+            border-bottom-color: #656565;
+        }
+
+        QTimeEdit::down-arrow:disabled, QDateTimeEdit::down-arrow:disabled, QDateEdit::down-arrow:disabled {
+            border-top-color: #656565;
         }
 
         /* CheckBox */

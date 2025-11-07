@@ -156,7 +156,7 @@ class CodecSelector:
             
             'av1': CodecProfile(
                 name='av1',
-                display_name='AV1',
+                display_name='AV1 (libaom)',
                 ffmpeg_name='libaom-av1',
                 compression_efficiency=10,
                 encoding_speed=2,
@@ -168,7 +168,6 @@ class CodecSelector:
                 recommended_for=[
                     CodecPurpose.QUALITY,
                     CodecPurpose.SIZE,
-                    CodecPurpose.WEB,
                     CodecPurpose.ARCHIVE
                 ],
                 min_year=2018,
@@ -177,6 +176,194 @@ class CodecSelector:
                 supports_10bit=True,
                 crf_range=(20, 40),
                 optimal_crf=30
+            ),
+
+            'svt-av1': CodecProfile(
+                name='svt-av1',
+                display_name='AV1 (SVT-AV1)',
+                ffmpeg_name='libsvtav1',
+                compression_efficiency=10,
+                encoding_speed=7,
+                quality_per_bitrate=10,
+                browser_support=8,
+                hw_acceleration=8,
+                compatible_containers=['mp4', 'webm', 'mkv'],
+                optimal_containers=['mp4', 'webm', 'mkv'],
+                recommended_for=[
+                    CodecPurpose.QUALITY,
+                    CodecPurpose.SIZE,
+                    CodecPurpose.WEB,
+                    CodecPurpose.ARCHIVE,
+                    CodecPurpose.SPEED
+                ],
+                min_year=2021,
+                max_resolution='8K',
+                supports_hdr=True,
+                supports_10bit=True,
+                crf_range=(20, 40),
+                optimal_crf=28
+            ),
+
+            'mjpeg': CodecProfile(
+                name='mjpeg',
+                display_name='MJPEG (Motion JPEG)',
+                ffmpeg_name='mjpeg',
+                compression_efficiency=3,
+                encoding_speed=10,
+                quality_per_bitrate=4,
+                browser_support=9,
+                hw_acceleration=8,
+                compatible_containers=['avi', 'mov', 'mkv', 'mp4'],
+                optimal_containers=['avi', 'mov'],
+                recommended_for=[
+                    CodecPurpose.SPEED,
+                    CodecPurpose.UNIVERSAL
+                ],
+                min_year=1992,
+                max_resolution='4K',
+                supports_hdr=False,
+                supports_10bit=False,
+                crf_range=(2, 31),
+                optimal_crf=5
+            ),
+
+            'prores': CodecProfile(
+                name='prores',
+                display_name='Apple ProRes',
+                ffmpeg_name='prores_ks',
+                compression_efficiency=5,
+                encoding_speed=8,
+                quality_per_bitrate=9,
+                browser_support=3,
+                hw_acceleration=7,
+                compatible_containers=['mov', 'mkv'],
+                optimal_containers=['mov'],
+                recommended_for=[
+                    CodecPurpose.QUALITY,
+                    CodecPurpose.ARCHIVE
+                ],
+                min_year=2007,
+                max_resolution='8K',
+                supports_hdr=True,
+                supports_10bit=True,
+                crf_range=(0, 32),
+                optimal_crf=10
+            ),
+
+            'dnxhd': CodecProfile(
+                name='dnxhd',
+                display_name='DNxHD / DNxHR',
+                ffmpeg_name='dnxhd',
+                compression_efficiency=5,
+                encoding_speed=9,
+                quality_per_bitrate=8,
+                browser_support=2,
+                hw_acceleration=6,
+                compatible_containers=['mov', 'mkv', 'mxf'],
+                optimal_containers=['mov', 'mxf'],
+                recommended_for=[
+                    CodecPurpose.QUALITY,
+                    CodecPurpose.ARCHIVE,
+                    CodecPurpose.SPEED
+                ],
+                min_year=2004,
+                max_resolution='8K',
+                supports_hdr=True,
+                supports_10bit=True,
+                crf_range=(0, 31),
+                optimal_crf=0
+            ),
+
+            'jpeg2000': CodecProfile(
+                name='jpeg2000',
+                display_name='JPEG 2000',
+                ffmpeg_name='jpeg2000',
+                compression_efficiency=7,
+                encoding_speed=3,
+                quality_per_bitrate=8,
+                browser_support=4,
+                hw_acceleration=3,
+                compatible_containers=['mov', 'mkv', 'mxf', 'jp2'],
+                optimal_containers=['mov', 'mxf'],
+                recommended_for=[
+                    CodecPurpose.QUALITY,
+                    CodecPurpose.ARCHIVE
+                ],
+                min_year=2000,
+                max_resolution='8K',
+                supports_hdr=True,
+                supports_10bit=True,
+                crf_range=(0, 100),
+                optimal_crf=20
+            ),
+
+            'theora': CodecProfile(
+                name='theora',
+                display_name='Theora',
+                ffmpeg_name='libtheora',
+                compression_efficiency=5,
+                encoding_speed=7,
+                quality_per_bitrate=5,
+                browser_support=7,
+                hw_acceleration=2,
+                compatible_containers=['ogg', 'mkv'],
+                optimal_containers=['ogg'],
+                recommended_for=[
+                    CodecPurpose.WEB
+                ],
+                min_year=2004,
+                max_resolution='4K',
+                supports_hdr=False,
+                supports_10bit=False,
+                crf_range=(0, 10),
+                optimal_crf=6
+            ),
+
+            'vvc': CodecProfile(
+                name='vvc',
+                display_name='H.266 / VVC',
+                ffmpeg_name='libvvenc',
+                compression_efficiency=10,
+                encoding_speed=2,
+                quality_per_bitrate=10,
+                browser_support=2,
+                hw_acceleration=3,
+                compatible_containers=['mp4', 'mkv', 'ts'],
+                optimal_containers=['mp4', 'mkv'],
+                recommended_for=[
+                    CodecPurpose.QUALITY,
+                    CodecPurpose.SIZE,
+                    CodecPurpose.ARCHIVE
+                ],
+                min_year=2020,
+                max_resolution='8K',
+                supports_hdr=True,
+                supports_10bit=True,
+                crf_range=(20, 45),
+                optimal_crf=32
+            ),
+
+            'mpeg2': CodecProfile(
+                name='mpeg2',
+                display_name='MPEG-2',
+                ffmpeg_name='mpeg2video',
+                compression_efficiency=3,
+                encoding_speed=9,
+                quality_per_bitrate=4,
+                browser_support=8,
+                hw_acceleration=9,
+                compatible_containers=['mpg', 'mpeg', 'vob', 'ts', 'mp4', 'mkv'],
+                optimal_containers=['mpg', 'vob', 'ts'],
+                recommended_for=[
+                    CodecPurpose.UNIVERSAL,
+                    CodecPurpose.SPEED
+                ],
+                min_year=1995,
+                max_resolution='1080p',
+                supports_hdr=False,
+                supports_10bit=False,
+                crf_range=(2, 31),
+                optimal_crf=8
             )
         }
     

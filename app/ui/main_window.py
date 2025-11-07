@@ -23,6 +23,9 @@ from .widgets.stream_selector import StreamSelectorWidget
 from .widgets.timing_options import TimingOptionsWidget
 from .widgets.metadata_editor import MetadataEditorWidget
 from .widgets.subtitle_options import SubtitleOptionsWidget
+from .widgets.image_sequence_widget import ImageSequenceWidget
+from .widgets.chapters_widget import ChaptersWidget
+from .widgets.concatenation_widget import ConcatenationWidget
 
 from core.ffmpeg_manager import FFmpegManager
 from core.conversion_engine import ConversionEngine
@@ -30,6 +33,10 @@ from core.batch_processor import BatchProcessor
 from core.codec_selector import CodecSelector, CodecPurpose
 from core.filter_manager import FilterManager
 from core.ffprobe_manager import FFProbeManager
+from core.image_sequence import ImageSequenceManager, ImageSequenceConfig, FrameExtractionConfig
+from core.chapters_manager import ChaptersManager
+from core.concatenation import ConcatenationManager, ConcatConfig
+from core.advanced_filters import get_advanced_video_filters, get_advanced_audio_filters
 
 logger = logging.getLogger(__name__)
 
@@ -66,8 +73,16 @@ class MainWindow(QMainWindow):
         self._setup_connections()
         self._check_ffmpeg()
         self._setup_gpu()
+        self._load_advanced_filters()
         self._apply_theme()
-    
+        self._restore_advanced_mode()
+
+    def _restore_advanced_mode(self):
+        """Восстановить сохраненное состояние расширенного режима"""
+        is_advanced = self.settings.value("advanced_mode", True, type=bool)
+        self.advanced_mode_action.setChecked(is_advanced)
+        self._toggle_advanced_mode()
+
     def _setup_window_geometry(self):
         """Настройка геометрии окна"""
         self.setWindowTitle("FFmpeg UI 2.0")
@@ -86,15 +101,55 @@ class MainWindow(QMainWindow):
         """Инициализация меню"""
         menubar = self.menuBar()
 
-        # Меню "Настройки"
-        settings_action = QAction("Настройки", self)
-        settings_action.triggered.connect(self._open_settings)
-        menubar.addAction(settings_action)
+        # === Меню "Инструменты" (теперь первое) ===
+        tools_menu = menubar.addMenu("🛠 Инструменты")
 
-        # Меню "Логирование"
-        logging_action = QAction("Логирование", self)
+        # Логирование
+        logging_action = QAction("📋 Просмотр логов", self)
+        logging_action.setShortcut("Ctrl+L")
         logging_action.triggered.connect(self._open_logger)
-        menubar.addAction(logging_action)
+        tools_menu.addAction(logging_action)
+
+        # Настройки
+        settings_action = QAction("⚙️ Настройки", self)
+        settings_action.setShortcut("Ctrl+,")
+        settings_action.triggered.connect(self._open_settings)
+        tools_menu.addAction(settings_action)
+
+        tools_menu.addSeparator()
+
+        # Выход
+        exit_action = QAction("❌ Выход", self)
+        exit_action.setShortcut("Ctrl+Q")
+        exit_action.triggered.connect(self.close)
+        tools_menu.addAction(exit_action)
+
+        # === Меню "Вид" ===
+        view_menu = menubar.addMenu("👁 Вид")
+
+        # Чекбокс расширенного режима (единственный пункт в меню)
+        self.advanced_mode_action = QAction("🔧 Расширенный режим", self)
+        self.advanced_mode_action.setCheckable(True)
+        self.advanced_mode_action.setChecked(True)  # По умолчанию включен
+        self.advanced_mode_action.triggered.connect(self._toggle_advanced_mode)
+        view_menu.addAction(self.advanced_mode_action)
+
+        # Список для отслеживания расширенных действий (пустой, но нужен для совместимости)
+        self.advanced_menu_actions = []
+
+        # === Меню "Помощь" ===
+        help_menu = menubar.addMenu("❓ Помощь")
+
+        # О программе
+        about_action = QAction("О программе", self)
+        about_action.triggered.connect(self._show_about)
+        help_menu.addAction(about_action)
+
+        # Горячие клавиши
+        shortcuts_action = QAction("Горячие клавиши", self)
+        shortcuts_action.setShortcut("F1")
+        shortcuts_action.triggered.connect(self._show_shortcuts)
+        help_menu.addAction(shortcuts_action)
 
     def _init_ui(self):
         """Инициализация UI"""
@@ -143,6 +198,18 @@ class MainWindow(QMainWindow):
         # Вкладка 9: Субтитры
         subtitles_tab = self._create_subtitles_tab()
         self.tabs.addTab(subtitles_tab, "💬 Субтитры")
+
+        # Вкладка 10: Последовательности изображений
+        image_seq_tab = self._create_image_sequence_tab()
+        self.tabs.addTab(image_seq_tab, "📸 Изображения")
+
+        # Вкладка 11: Главы
+        chapters_tab = self._create_chapters_tab()
+        self.tabs.addTab(chapters_tab, "📖 Главы")
+
+        # Вкладка 12: Объединение видео
+        concat_tab = self._create_concatenation_tab()
+        self.tabs.addTab(concat_tab, "🔗 Объединение")
 
         # Добавляем вкладки в layout (теперь без горизонтального split)
         central_layout.addWidget(self.tabs, stretch=1)
@@ -403,6 +470,54 @@ class MainWindow(QMainWindow):
 
         return tab
 
+    def _create_image_sequence_tab(self) -> QWidget:
+        """Создать вкладку для работы с изображениями"""
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        layout.setContentsMargins(10, 10, 10, 10)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+        self.image_sequence_widget = ImageSequenceWidget()
+        scroll.setWidget(self.image_sequence_widget)
+
+        layout.addWidget(scroll)
+        return tab
+
+    def _create_chapters_tab(self) -> QWidget:
+        """Создать вкладку для управления главами"""
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        layout.setContentsMargins(10, 10, 10, 10)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+        self.chapters_widget = ChaptersWidget()
+        scroll.setWidget(self.chapters_widget)
+
+        layout.addWidget(scroll)
+        return tab
+
+    def _create_concatenation_tab(self) -> QWidget:
+        """Создать вкладку для объединения видео"""
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        layout.setContentsMargins(10, 10, 10, 10)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+        self.concatenation_widget = ConcatenationWidget()
+        scroll.setWidget(self.concatenation_widget)
+
+        layout.addWidget(scroll)
+        return tab
+
     def _setup_connections(self):
         """Настройка сигналов"""
         self.start_button.clicked.connect(self._start_conversion)
@@ -415,6 +530,17 @@ class MainWindow(QMainWindow):
 
         # Связываем изменения фильтров с video preview
         self.filter_widget.filters_changed.connect(self._on_filters_changed)
+
+        # Image Sequences
+        self.image_sequence_widget.create_video_requested.connect(self._handle_create_video_from_images)
+        self.image_sequence_widget.extract_frames_requested.connect(self._handle_extract_frames)
+
+        # Chapters
+        self.chapters_widget.add_chapters_requested.connect(self._handle_add_chapters)
+        self.chapters_widget.split_by_chapters_requested.connect(self._handle_split_by_chapters)
+
+        # Concatenation
+        self.concatenation_widget.concat_requested.connect(self._handle_concatenation)
     
     def _on_batch_files_selected(self, files):
         """Обработка выбора batch файлов"""
@@ -483,11 +609,11 @@ class MainWindow(QMainWindow):
     def _setup_gpu(self):
         """Настройка GPU"""
         gpu_detector = self.ffmpeg_manager.get_gpu_detector()
-        
+
         if gpu_detector:
             gpu_list = gpu_detector.get_gpu_list()
             self.advanced_options.set_gpu_list(gpu_list)
-            
+
             primary_gpu = gpu_detector.get_primary_gpu()
             if primary_gpu and primary_gpu.vendor != 'none':
                 self.statusBar().showMessage(f"✓ GPU обнаружен: {primary_gpu}", 5000)
@@ -497,7 +623,202 @@ class MainWindow(QMainWindow):
                 logger.info("GPU не обнаружен")
         else:
             logger.warning("GPU детектор недоступен")
-    
+
+        # Загружаем расширенные фильтры
+        self._load_advanced_filters()
+
+    def _load_advanced_filters(self):
+        """Загрузить расширенные фильтры"""
+        try:
+            # Получаем новые фильтры
+            video_filters = get_advanced_video_filters()
+            audio_filters = get_advanced_audio_filters()
+
+            # Добавляем в filter_manager
+            for filter_id, filter_profile in video_filters.items():
+                if not hasattr(self.filter_manager, 'filters'):
+                    self.filter_manager.filters = {}
+                self.filter_manager.filters[filter_id] = filter_profile
+
+            for filter_id, filter_profile in audio_filters.items():
+                if not hasattr(self.filter_manager, 'filters'):
+                    self.filter_manager.filters = {}
+                self.filter_manager.filters[filter_id] = filter_profile
+
+            # Обновляем UI фильтров
+            if hasattr(self, 'filter_widget') and hasattr(self.filter_widget, 'refresh_filter_library'):
+                self.filter_widget.refresh_filter_library()
+
+            logger.info(f"Загружено {len(video_filters)} видео и {len(audio_filters)} аудио расширенных фильтров")
+        except Exception as e:
+            logger.error(f"Ошибка загрузки расширенных фильтров: {e}", exc_info=True)
+
+    def _handle_create_video_from_images(self, config: ImageSequenceConfig):
+        """Обработка создания видео из изображений"""
+        try:
+            manager = ImageSequenceManager(self.ffmpeg_manager.ffmpeg_path)
+            cmd = manager.build_image_to_video_command(config)
+
+            if not cmd:
+                QMessageBox.warning(self, "Ошибка", "Не удалось построить команду")
+                return
+
+            # Запускаем конвертацию
+            self._start_conversion_with_command(cmd, config.output_file)
+            logger.info(f"Запущено создание видео из изображений: {config.output_file}")
+        except Exception as e:
+            logger.error(f"Ошибка создания видео из изображений: {e}", exc_info=True)
+            QMessageBox.critical(self, "Ошибка", f"Ошибка создания видео:\n{str(e)}")
+
+    def _handle_extract_frames(self, config: FrameExtractionConfig):
+        """Обработка извлечения кадров из видео"""
+        try:
+            manager = ImageSequenceManager(self.ffmpeg_manager.ffmpeg_path)
+            cmd = manager.build_frame_extraction_command(config)
+
+            if not cmd:
+                QMessageBox.warning(self, "Ошибка", "Не удалось построить команду")
+                return
+
+            self._start_conversion_with_command(cmd, config.output_pattern)
+            logger.info(f"Запущено извлечение кадров: {config.output_pattern}")
+        except Exception as e:
+            logger.error(f"Ошибка извлечения кадров: {e}", exc_info=True)
+            QMessageBox.critical(self, "Ошибка", f"Ошибка извлечения кадров:\n{str(e)}")
+
+    def _handle_add_chapters(self, chapters: list, input_file: str, output_file: str):
+        """Обработка добавления глав к видео"""
+        try:
+            manager = ChaptersManager(
+                self.ffmpeg_manager.ffmpeg_path,
+                self.ffmpeg_manager.ffprobe_path
+            )
+            cmd = manager.add_chapters_to_video(input_file, chapters, output_file)
+
+            if not cmd:
+                QMessageBox.warning(self, "Ошибка", "Не удалось построить команду")
+                return
+
+            self._start_conversion_with_command(cmd, output_file)
+            logger.info(f"Запущено добавление глав: {len(chapters)} глав в {output_file}")
+        except Exception as e:
+            logger.error(f"Ошибка добавления глав: {e}", exc_info=True)
+            QMessageBox.critical(self, "Ошибка", f"Ошибка добавления глав:\n{str(e)}")
+
+    def _handle_split_by_chapters(self, chapters: list, input_file: str, output_folder: str):
+        """Обработка разделения видео по главам"""
+        try:
+            manager = ChaptersManager(
+                self.ffmpeg_manager.ffmpeg_path,
+                self.ffmpeg_manager.ffprobe_path
+            )
+            commands = manager.split_video_by_chapters(input_file, chapters, output_folder)
+
+            if not commands:
+                QMessageBox.warning(self, "Ошибка", "Не удалось построить команды")
+                return
+
+            # Для множественных команд создаем batch задачи
+            from core.batch_processor import BatchJob
+            batch_jobs = []
+            for i, cmd in enumerate(commands):
+                output_path = Path(output_folder) / f"chapter_{i+1:02d}.mp4"
+                job = BatchJob(
+                    input_file=input_file,
+                    output_file=str(output_path),
+                    format_name="mp4",
+                    ffmpeg_command=cmd
+                )
+                batch_jobs.append(job)
+
+            # Запускаем batch обработку
+            self._start_batch_with_jobs(batch_jobs)
+            logger.info(f"Запущено разделение по главам: {len(chapters)} частей")
+        except Exception as e:
+            logger.error(f"Ошибка разделения по главам: {e}", exc_info=True)
+            QMessageBox.critical(self, "Ошибка", f"Ошибка разделения по главам:\n{str(e)}")
+
+    def _handle_concatenation(self, config: ConcatConfig):
+        """Обработка объединения видео"""
+        try:
+            manager = ConcatenationManager(self.ffmpeg_manager.ffmpeg_path)
+            cmd = manager.build_concat_command(config)
+
+            if not cmd:
+                QMessageBox.warning(self, "Ошибка", "Не удалось построить команду")
+                return
+
+            self._start_conversion_with_command(cmd, config.output_file)
+            logger.info(f"Запущено объединение: {len(config.clips)} клипов в {config.output_file}")
+        except Exception as e:
+            logger.error(f"Ошибка объединения видео: {e}", exc_info=True)
+            QMessageBox.critical(self, "Ошибка", f"Ошибка объединения видео:\n{str(e)}")
+
+    def _start_conversion_with_command(self, cmd: list, output_file: str):
+        """Запуск конвертации с готовой командой"""
+        # Останавливаем предыдущие процессы
+        if self.conversion_engine:
+            self.conversion_engine.stop()
+            if self.conversion_thread:
+                self.conversion_thread.quit()
+                self.conversion_thread.wait()
+
+        # Создаем новый engine
+        self.conversion_engine = ConversionEngine(cmd)
+        self.conversion_thread = QThread()
+        self.conversion_engine.moveToThread(self.conversion_thread)
+
+        # Подключаем сигналы
+        self.conversion_thread.started.connect(self.conversion_engine.start)
+        self.conversion_engine.progress_updated.connect(self.progress_widget.update_progress)
+        self.conversion_engine.conversion_finished.connect(self._on_conversion_finished)
+        self.conversion_engine.conversion_error.connect(self._on_conversion_error)
+
+        # Обновляем UI
+        self.progress_widget.show_progress()
+        self.start_button.setEnabled(False)
+        self.stop_button.setEnabled(True)
+
+        # Запускаем
+        self.conversion_thread.start()
+        logger.info(f"Конвертация запущена: {output_file}")
+        logger.info(f"Команда FFmpeg: {' '.join(cmd)}")
+
+    def _start_batch_with_jobs(self, jobs: list):
+        """Запуск batch обработки с готовыми задачами"""
+        if not jobs:
+            return
+
+        # Останавливаем предыдущие процессы
+        if self.batch_processor:
+            self.batch_processor.stop()
+            if self.batch_thread:
+                self.batch_thread.quit()
+                self.batch_thread.wait()
+
+        # Создаем batch processor
+        from core.batch_processor import BatchProcessor
+        self.batch_processor = BatchProcessor(jobs, self.ffmpeg_manager.ffmpeg_path)
+        self.batch_thread = QThread()
+        self.batch_processor.moveToThread(self.batch_thread)
+
+        # Подключаем сигналы
+        self.batch_thread.started.connect(self.batch_processor.start)
+        self.batch_processor.job_started.connect(self._on_batch_job_started)
+        self.batch_processor.job_finished.connect(self._on_batch_job_finished)
+        self.batch_processor.job_error.connect(self._on_batch_job_error)
+        self.batch_processor.all_finished.connect(self._on_batch_all_finished)
+        self.batch_processor.progress_updated.connect(self.progress_widget.update_progress)
+
+        # Обновляем UI
+        self.progress_widget.show_progress()
+        self.start_button.setEnabled(False)
+        self.stop_button.setEnabled(True)
+
+        # Запускаем
+        self.batch_thread.start()
+        logger.info(f"Batch обработка запущена: {len(jobs)} задач")
+
     def _start_conversion(self):
         """Запуск конвертации"""
         if self.file_selector.is_batch_mode() and self.batch_files:
@@ -1114,7 +1435,7 @@ class MainWindow(QMainWindow):
         if extra_params:
             pass1_cmd.extend(extra_params.split())
 
-        pass1_cmd.extend(["-pass", "1", "-passlogfile", str(passlogfile), "-f", output_format, null_device])
+        pass1_cmd.extend(["-pass", "1", "-passlogfile", str(passlogfile), "-f", "null", null_device])
 
         # === PASS 2 COMMAND (с аудио и метаданными) ===
         pass2_cmd = cmd.copy()
@@ -1199,7 +1520,8 @@ class MainWindow(QMainWindow):
             'libx265': 'hevc',
             'libvpx': 'vp8',
             'libvpx-vp9': 'vp9',
-            'libaom-av1': 'av1'
+            'libaom-av1': 'av1',
+            'libsvtav1': 'svt-av1'
         }
         return codec_map.get(ffmpeg_codec, 'h264')
     
@@ -1570,6 +1892,102 @@ class MainWindow(QMainWindow):
         else:
             self.logger_widget.raise_()
             self.logger_widget.activateWindow()
+
+    def _show_about(self):
+        """Показать окно О программе"""
+        from PySide6.QtWidgets import QMessageBox
+
+        about_text = """
+        <h2>FFmpeg UI 2.0</h2>
+        <p><b>Мощное и удобное десктопное приложение, предоставляющее современный графический интерфейс для конвертации видео через FFmpeg.</b></p>
+        <p>Версия: 1.1</p>
+
+        <p><b>Возможности:</b></p>
+        <ul>
+        <li>🎬 Поддержка всех популярных форматов видео</li>
+        <li>🚀 GPU ускорение (NVIDIA, Intel QSV, AMD AMF)</li>
+        <li>🎨 Расширенные фильтры и эффекты</li>
+        <li>📊 Превью видео с live-фильтрами</li>
+        <li>⚡ Пакетная конвертация</li>
+        <li>✂️ Обрезка и склейка видео</li>
+        <li>📝 Редактор метаданных</li>
+        <li>💬 Работа с субтитрами</li>
+        </ul>
+
+        <p><b>Технологии:</b> Python, PySide6, FFmpeg</p>
+        <p><b>Лицензия:</b> GPLv3</p>
+        """
+
+        QMessageBox.about(self, "О программе", about_text)
+
+    def _show_shortcuts(self):
+        """Показать окно с горячими клавишами"""
+        from PySide6.QtWidgets import QMessageBox
+
+        shortcuts_text = """
+        <h2>Горячие клавиши</h2>
+
+        <p><b>🛠 Инструменты:</b></p>
+        <ul>
+        <li><b>Ctrl+L</b> - Просмотр логов</li>
+        <li><b>Ctrl+,</b> - Настройки</li>
+        <li><b>Ctrl+Q</b> - Выход из программы</li>
+        </ul>
+
+        <p><b>👁 Основные вкладки:</b></p>
+        <ul>
+        <li><b>Ctrl+1</b> - Файлы</li>
+        <li><b>Ctrl+2</b> - Превью</li>
+        <li><b>Ctrl+3</b> - Видео</li>
+        <li><b>Ctrl+4</b> - Аудио</li>
+        <li><b>Ctrl+5</b> - Дополнительно</li>
+        </ul>
+
+        <p><b>👁 Расширенные вкладки:</b></p>
+        <ul>
+        <li><b>Ctrl+6</b> - Потоки</li>
+        <li><b>Ctrl+7</b> - Обрезка</li>
+        <li><b>Ctrl+8</b> - Метаданные</li>
+        <li><b>Ctrl+9</b> - Субтитры</li>
+        <li><b>Ctrl+0</b> - Изображения</li>
+        <li><b>Alt+1</b> - Главы</li>
+        <li><b>Alt+2</b> - Объединение</li>
+        </ul>
+
+        <p><b>❓ Помощь:</b></p>
+        <ul>
+        <li><b>F1</b> - Показать горячие клавиши</li>
+        </ul>
+        """
+
+        QMessageBox.information(self, "Горячие клавиши", shortcuts_text)
+
+    def _toggle_advanced_mode(self):
+        """Переключение расширенного режима (скрыть/показать дополнительные вкладки)"""
+        is_advanced = self.advanced_mode_action.isChecked()
+
+        # Индексы расширенных вкладок (с 5 по 11)
+        # 0-4: Основные (Файлы, Превью, Видео, Аудио, Дополнительно)
+        # 5-11: Расширенные (Потоки, Обрезка, Метаданные, Субтитры, Изображения, Главы, Объединение)
+        advanced_tab_indices = [5, 6, 7, 8, 9, 10, 11]
+
+        if is_advanced:
+            # Показать все расширенные вкладки
+            for i in advanced_tab_indices:
+                self.tabs.setTabVisible(i, True)
+        else:
+            # Скрыть расширенные вкладки
+            current_index = self.tabs.currentIndex()
+            for i in advanced_tab_indices:
+                self.tabs.setTabVisible(i, False)
+
+            # Если текущая вкладка была расширенной, переключиться на основную
+            if current_index in advanced_tab_indices:
+                self.tabs.setCurrentIndex(0)  # Переключиться на "Файлы"
+
+        # Сохранить настройку
+        self.settings.setValue("advanced_mode", is_advanced)
+        logger.info(f"Расширенный режим: {'включен' if is_advanced else 'выключен'}")
 
     def _on_theme_changed(self, theme: str):
         """Обработка изменения темы"""

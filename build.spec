@@ -93,6 +93,10 @@ a = Analysis(
         'app.core.filter_manager',
         'app.core.stream_info',
         'app.core.ffprobe_manager',
+        'app.core.advanced_filters',
+        'app.core.chapters_manager',
+        'app.core.concatenation',
+        'app.core.image_sequence',
 
         # Application modules - UI
         'app.ui',
@@ -113,6 +117,9 @@ a = Analysis(
         'app.ui.widgets.metadata_editor',
         'app.ui.widgets.subtitle_options',
         'app.ui.widgets.video_preview',
+        'app.ui.widgets.chapters_widget',
+        'app.ui.widgets.concatenation_widget',
+        'app.ui.widgets.image_sequence_widget',
         'app.ui.styles',
         'app.ui.styles.modern_theme',
 

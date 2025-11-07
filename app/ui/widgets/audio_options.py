@@ -46,6 +46,14 @@ class AudioOptions(QWidget):
             "libvorbis (Vorbis)",
             "libopus (Opus)",
             "flac",
+            "ac3 (Dolby Digital)",
+            "eac3 (Dolby Digital Plus)",
+            "dts",
+            "amr_nb (AMR Narrowband)",
+            "amr_wb (AMR Wideband)",
+            "libtwolame (MP2)",
+            "liblc3 (LC3 - Bluetooth LE)",
+            "alac (Apple Lossless)",
             "copy"
         ])
         self.codec_combo.setToolTip(
@@ -53,7 +61,14 @@ class AudioOptions(QWidget):
             "• aac - современный, отличная совместимость\n"
             "• mp3 - универсальный, работает везде\n"
             "• opus - лучшее качество при низком битрейте\n"
-            "• flac - без потерь, большой размер\n"
+            "• flac - без потерь (lossless), большой размер\n"
+            "• ac3 - Dolby Digital, домашний кинотеатр (5.1)\n"
+            "• eac3 - Dolby Digital Plus, улучшенная версия\n"
+            "• dts - конкурент Dolby, домашний кинотеатр\n"
+            "• amr_nb/wb - мобильная телефония, низкий битрейт\n"
+            "• mp2 - MPEG Audio Layer II, DVD/Broadcast\n"
+            "• lc3 - Bluetooth LE Audio, современный\n"
+            "• alac - Apple Lossless, без потерь для iTunes\n"
             "• copy - копирование без перекодирования"
         )
         group_layout.addWidget(self.codec_combo, row, 1)
@@ -170,13 +185,21 @@ class AudioOptions(QWidget):
         """Получить аудио кодек"""
         if self.is_audio_removal_enabled():
             return None
-            
+
         codec_map = {
             "aac": "aac",
             "libmp3lame (MP3)": "libmp3lame",
             "libvorbis (Vorbis)": "libvorbis",
             "libopus (Opus)": "libopus",
             "flac": "flac",
+            "ac3 (Dolby Digital)": "ac3",
+            "eac3 (Dolby Digital Plus)": "eac3",
+            "dts": "dca",
+            "amr_nb (AMR Narrowband)": "libopencore_amrnb",
+            "amr_wb (AMR Wideband)": "libvo_amrwbenc",
+            "libtwolame (MP2)": "libtwolame",
+            "liblc3 (LC3 - Bluetooth LE)": "liblc3",
+            "alac (Apple Lossless)": "alac",
             "copy": "copy"
         }
         return codec_map.get(self.codec_combo.currentText(), "aac")

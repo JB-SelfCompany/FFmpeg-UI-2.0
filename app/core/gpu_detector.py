@@ -422,16 +422,18 @@ class GPUDetector:
             return {
                 'vp8': 'libvpx',
                 'vp9': 'libvpx-vp9',
-                'av1': 'libaom-av1'
+                'av1': 'libaom-av1',
+                'svt-av1': 'libsvtav1'
             }.get(codec, 'libvpx-vp9')
-        
+
         return {
             'h264': 'libx264',
             'hevc': 'libx265',
             'h265': 'libx265',
             'vp8': 'libvpx',
             'vp9': 'libvpx-vp9',
-            'av1': 'libaom-av1'
+            'av1': 'libaom-av1',
+            'svt-av1': 'libsvtav1'
         }.get(codec, 'libx264')
     
     def get_hwaccel_args(self, preferred_gpu: str = 'auto') -> List[str]:

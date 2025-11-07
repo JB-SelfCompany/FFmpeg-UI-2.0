@@ -9,7 +9,7 @@
 [![FFmpeg](https://img.shields.io/badge/FFmpeg-Powered-007808?style=for-the-badge&logo=ffmpeg&logoColor=white)](https://ffmpeg.org/)
 [![License](https://img.shields.io/badge/License-GPLv3-blue?style=for-the-badge)](LICENSE)
 
-[Возможности](#-возможности) • [Установка](#-установка) • [Использование](#-использование) • [Сборка](#-cборка-из-исходного-кода) • [Скриншоты](#-скриншоты)
+[Возможности](#-возможности) • [Установка](#-установка) • [Использование](#-использование) • [Сборка](#-сборка-из-исходного-кода) • [Скриншоты](#-скриншоты)
 
 </div>
 
